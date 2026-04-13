@@ -16,7 +16,8 @@
 
 Automation-Lab-Setup-Flow
 
-     colima --> docker --> minikube --> k8s --> vault --> terraform --> awx --> github-actions CI/CD --> playbooks --> Automation Jobs --> ansible-cli
+     colima --> docker --> minikube --> k8s --> vault --> terraform --> awx --> github-actions CI/CD 
+	 playbooks --> Automation Jobs --> ansible-cli
 
 ⚡ Purpose
 
