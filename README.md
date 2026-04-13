@@ -1,10 +1,9 @@
 # mahder05-lab-automation
 
-🚀 Automation Lab
-
-A personal lab to practice and build skills in DevOps and automation tools.
+🚀 Automation Lab: A personal lab to practice and build skills in DevOps and automation tools.
 
 🛠️ Tools Used
+
 	•	Ansible
 	•	Docker
 	•	Kubernetes
@@ -15,7 +14,8 @@ A personal lab to practice and build skills in DevOps and automation tools.
 	•	Helm
 	•	Colima
 
-automation-lab/
+automation-lab
+
 ├── ansible/
 ├── docker/
 ├── kubernetes/
@@ -24,6 +24,7 @@ automation-lab/
 └── README.md
 
 ⚡ Purpose
+
 	•	Practice automation
 	•	Build DevOps workflows
 	•	Learn containerization & orchestration
@@ -31,4 +32,5 @@ automation-lab/
 
 
 👨‍💻 Author
+
 Maheshbabu Derangula
