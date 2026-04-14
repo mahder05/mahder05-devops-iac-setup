@@ -1,56 +1,70 @@
+# ==========================================
+# 1. TERRAFORM & PROVIDER CONFIGURATION
+# ==========================================
 terraform {
   required_providers {
     kubernetes = {
       source  = "hashicorp/kubernetes"
       version = "~> 2.0"
     }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.12" # Modern version for M4 compatibility
-    }
     vault = {
       source  = "hashicorp/vault"
-      version = "~> 5.0"  # This matches your current environment better
+      version = "~> 5.0"
+    }
+    awx = {
+      source  = "jylitalo/awx"
+      version = "0.22.0"
     }
   }
 }
-
-# --- Providers ---
 
 provider "kubernetes" {
   config_path = "~/.kube/config"
 }
 
-provider "helm" {
-  kubernetes {
-    config_path = "~/.kube/config"
-  }
-}
-
 provider "vault" {
-  address = "http://localhost:8200"
-  # Best Practice: Export VAULT_TOKEN in your terminal 
-  # instead of hardcoding it here.
+  address = "http://127.0.0.1:8200"
+  # Token is passed via environment variable: export VAULT_TOKEN="..."
 }
 
-# --- 1. Kubernetes Namespace ---
+provider "awx" {
+  endpoint = "http://localhost:8080" # Update with Minikube IP if needed
+  username = "admin"
+  password = var.awx_password
+}
 
-resource "kubernetes_namespace" "devops_lab" {
+# ==========================================
+# 2. VARIABLES (Passed via CLI to stay safe)
+# ==========================================
+variable "awx_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "vault_role_id" {
+  type      = string
+  sensitive = true
+}
+
+variable "vault_secret_id" {
+  type      = string
+  sensitive = true
+}
+
+# ==========================================
+# 3. KUBERNETES RESOURCES
+# ==========================================
+resource "kubernetes_namespace" "lab_space" {
   metadata {
-    name = var.namespace_name
+    name = "production-ready-lab"
   }
 }
 
-# --- 2. Nginx Deployment (Pod & Service) ---
-
-resource "kubernetes_pod" "nginx_pod" {
+# Example Pod (Nginx) inside your namespace
+resource "kubernetes_pod" "nginx_test" {
   metadata {
-    name      = "terraform-nginx"
-    namespace = kubernetes_namespace.devops_lab.metadata[0].name
-    labels = {
-      app = "nginx"
-      env = "learning"
-    }
+    name      = "nginx-test"
+    namespace = kubernetes_namespace.lab_space.metadata[0].name
   }
 
   spec {
@@ -64,107 +78,11 @@ resource "kubernetes_pod" "nginx_pod" {
   }
 }
 
-resource "kubernetes_service" "nginx_service" {
-  metadata {
-    name      = "nginx-service"
-    namespace = kubernetes_namespace.devops_lab.metadata[0].name
-  }
+# ==========================================
+# 4. AWX & VAULT INTEGRATION (The Bridge)
+# ==========================================
 
-  spec {
-    selector = {
-      app = "nginx"
-      env = "learning"
-    }
-
-    port {
-      port        = 80
-      target_port = 80
-      node_port   = var.nginx_node_port
-    }
-
-    type = "NodePort"
-  }
-}
-
-# --- 3. AWX Operator (The Management Layer) ---
-
-# --- 3. AWX Operator (The Management Layer) ---
-
-resource "helm_release" "awx_operator" {
-  name       = "awx-operator"
-  # Use the dedicated -helm repository URL
-  repository = "https://ansible-community.github.io/awx-operator-helm/"
-  chart      = "awx-operator"
-  namespace  = kubernetes_namespace.devops_lab.metadata[0].name
-
-  # Optional: Use a specific stable version (e.g., 3.2.1 as of April 2026)
-  # version    = "3.2.1"
-
-  # Ensures the operator doesn't start until the namespace is ready
-  depends_on = [kubernetes_namespace.devops_lab]
-}
-
-# --- 4. Vault Secret Management ---
-
-resource "vault_generic_secret" "ansible_creds" {
-  path = "secret/ansible"
-
-  data_json = jsonencode({
-    username = "admin"
-    password = "Dkbmlrv@508"
-  })
-}
-
-# --- Outputs ---
-
-output "final_status" {
-  value = <<EOF
-
-  ✅ Infrastructure Applied!
-  
-  Kubernetes:
-  - Namespace: ${kubernetes_namespace.devops_lab.metadata[0].name}
-  - Nginx URL: http://$(minikube ip):${var.nginx_node_port}
-  
-  AWX:
-  - Operator Status: Deployed via Helm
-  - Next Step: Apply the AWX Custom Resource (YAML) to start the AWX instance.
-  
-  Vault:
-  - Secret Path: ${vault_generic_secret.ansible_creds.path}
-  
-  EOF
-}
-
-# --- 5. The actual AWX Instance ---
-
-resource "kubernetes_manifest" "awx_instance" {
-  manifest = {
-    apiVersion = "awx.ansible.com/v1beta1"
-    kind       = "AWX"
-    metadata = {
-      name      = "awx-lab"
-      # Use the new namespace variable
-      namespace = kubernetes_namespace.devops_lab.metadata[0].name 
-    }
-    spec = {
-      service_type     = "NodePort"
-      development_mode = true
-      
-      # ADD THIS: Point to your existing postgres data if you moved it
-      postgres_configuration_secret = "postgres-15-awx-lab-postgres-15-0"
-    }
-  }
-  depends_on = [helm_release.awx_operator]
-}
-
-# The AWX provider - This allows Terraform to create buttons and settings inside AWX
-provider "awx" {
-  endpoint = "http://localhost:8080" # Or your minikube IP
-  username = "admin"
-  password = "Dkbmlrv@508"
-}
-
+# This creates the AppRole credential inside the AWX UI
 resource "awx_credential" "vault_approle" {
   name            = "Vault AppRole Credential"
   organization_id = 1

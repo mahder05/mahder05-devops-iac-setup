@@ -1,0 +1,15 @@
+apiVersion: awx.ansible.com/v1beta1
+kind: AWX
+metadata:
+  name: awx-mastery-lab
+spec:
+  service_type: nodeport
+  # M4 Optimization: Limit RAM usage
+  postgres_resource_requirements:
+    requests:
+      cpu: "100m"
+      memory: "512Mi"
+  web_resource_requirements:
+    requests:
+      cpu: "100m"
+      memory: "512Mi"
