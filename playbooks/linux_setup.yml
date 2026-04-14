@@ -21,8 +21,12 @@
 
     - name: Set credentials as host facts
       set_fact:
-        ansible_user: "{{ vault_result.secret['username'] }}"
-        ansible_password: "{{ vault_result.secret['password'] }}"
+        ansible_user: "{{ vault_result.data.data.ansible_user }}"
+        ansible_password: "{{ vault_result.data.data.ansible_password }}"
+    
+    - name: See exactly what keys are in Vault
+      debug:
+        msg: "The keys available are: {{ vault_result.data.data.keys() | list }}"
 
 - name: Universal Linux Host Setup and Management
   hosts: linux
