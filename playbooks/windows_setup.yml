@@ -30,8 +30,8 @@
 
     - name: Set WinRM and User facts
       set_fact:
-        ansible_user: "{{ win_vault.secret.username }}"
-        ansible_password: "{{ win_vault.secret.password }}"
+        ansible_user: "{{ win_vault.data.data.ansible_user }}"
+        ansible_password: "{{ win_vault.data.data.ansible_password }}"
         # Extracting the new user password here to avoid double-fetching
         new_user_password: "{{ win_vault.secret.labuser_password | default('M4_Mastery_2026!') }}"
         ansible_winrm_transport: basic
