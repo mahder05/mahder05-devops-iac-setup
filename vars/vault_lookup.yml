@@ -1,18 +1,18 @@
 ---
-# This version explicitly authenticates using AppRole
-vault_data: "{{ lookup('community.hashi_vault.vault_kv2_get', 
-                secret_path, 
-                url='http://vault.awx-mastery:8200', 
-                engine_mount_point='secret',
-                auth_method='approle',
-                role_id=vault_role_id,
-                secret_id=vault_secret_id).data.data }}"
+# # This version explicitly authenticates using AppRole
+# vault_data: "{{ lookup('community.hashi_vault.vault_kv2_get', 
+#                 secret_path, 
+#                 url='http://vault.awx-mastery:8200', 
+#                 engine_mount_point='secret',
+#                 auth_method='approle',
+#                 role_id=vault_role_id,
+#                 secret_id=vault_secret_id).data.data }}"
 
-ansible_user: "{{ vault_data['ansible_user'] }}"
-ansible_password: "{{ vault_data['ansible_password'] }}"
+# ansible_user: "{{ vault_data['ansible_user'] }}"
+# ansible_password: "{{ vault_data['ansible_password'] }}"
 
 
-# # vault_kv2: "{{ lookup('community.hashi_vault.vault_kv2_get', secret_path, url=vault_url, auth_method='approle', role_id=vault_role_id, secret_id=vault_secret_id, engine_mount_point='secret').secret }}"
+vault_kv2: "{{ lookup('community.hashi_vault.vault_kv2_get', secret_path, url=vault_url, auth_method='approle', role_id=vault_role_id, secret_id=vault_secret_id, engine_mount_point='secret').secret }}"
 
 # # This fetches the raw dictionary from Vault
 # vault_data: "{{ lookup('community.hashi_vault.vault_kv2_get', secret_path, url='http://vault.awx-mastery:8200', engine_mount_point='secret').data.data }}"
