@@ -1,23 +1,26 @@
 ---
-- name: Hybrid Lab - Linux
+- name: Hybrid Lab - Linux Ping
   hosts: linux
   gather_facts: false
   vars:
-    # This must match the path you seeded in Vault
+    # Build path based on your Vault structure: secret/lab/linux/hostname
     secret_path: "lab/linux/{{ inventory_hostname }}"
-  vars_files:
-    - ../vars/vault_lookup.yml
   tasks:
-    - name: Ping
+    - name: Load Vault Secrets for Linux
+      include_vars: ../vars/vault_lookup.yml
+
+    - name: Ping Linux Hosts
       ansible.builtin.ping:
 
-- name: Hybrid Lab - Windows
+- name: Hybrid Lab - Windows Ping
   hosts: windows
   gather_facts: false
   vars:
+    # Build path based on your Vault structure: secret/lab/windows/hostname
     secret_path: "lab/windows/{{ inventory_hostname }}"
-  vars_files:
-    - ../vars/vault_lookup.yml
   tasks:
-    - name: Win ping
+    - name: Load Vault Secrets for Windows
+      include_vars: ../vars/vault_lookup.yml
+
+    - name: Ping Windows Hosts
       ansible.windows.win_ping:
