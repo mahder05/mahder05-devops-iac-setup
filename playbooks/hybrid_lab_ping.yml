@@ -2,27 +2,22 @@
 - name: Hybrid Lab - Linux
   hosts: linux
   gather_facts: false
+  vars:
+    # This must match the path you seeded in Vault
+    secret_path: "lab/linux/{{ inventory_hostname }}"
   vars_files:
     - ../vars/vault_lookup.yml
-  vars:
-    secret_path: "lab/linux/{{ inventory_hostname }}"
-    ansible_user: "{{ vault_kv2['username'] }}"
-    ansible_password: "{{ vault_kv2['password'] }}"
-
   tasks:
     - name: Ping
-      ping:
+      ansible.builtin.ping:
 
 - name: Hybrid Lab - Windows
   hosts: windows
   gather_facts: false
-  vars_files:
-    - ../vars/vault_lookup.yml
   vars:
     secret_path: "lab/windows/{{ inventory_hostname }}"
-    ansible_user: "{{ vault_kv2['username'] }}"
-    ansible_password: "{{ vault_kv2['password'] }}"
-
+  vars_files:
+    - ../vars/vault_lookup.yml
   tasks:
     - name: Win ping
       ansible.windows.win_ping:
