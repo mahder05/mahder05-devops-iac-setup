@@ -2,9 +2,9 @@
 # Define the connection details
 vault_url: "http://vault.awx-mastery.svc.cluster.local:8200"
 
-# Hardcode credentials here (temporary)
-v_role_id: "cee77d55-b0dc-32ec-f28a-d5df6639ffd3"
-v_secret_id: "a1da2303-6017-1ed7-0493-bbcc7d6f01aa"
+# Use environment variables injected by AWX
+v_role_id: "{{ lookup('env', 'VAULT_ROLE_ID') }}"
+v_secret_id: "{{ lookup('env', 'VAULT_SECRET_ID') }}"
 
 # Execute the lookup
 vault_kv2: "{{ lookup('community.hashi_vault.vault_kv2_get', 
@@ -18,4 +18,4 @@ vault_kv2: "{{ lookup('community.hashi_vault.vault_kv2_get',
 # Map the data to connection variables
 ansible_user: "{{ vault_kv2.data.data.username }}"
 ansible_password: "{{ vault_kv2.data.data.password }}"
-ansible_become_password: "{{ vault_kv2.data.data.get('become_password', '') }}"
+ansible_become_password: "{{ vault_kv2.data.data.get('become_password', ansible_password) }}"
