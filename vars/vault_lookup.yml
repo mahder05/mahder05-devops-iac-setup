@@ -3,13 +3,14 @@
 vault_url: "http://vault.awx-mastery.svc.cluster.local:8200"
 
 # Use environment variables injected by AWX
-v_role_id: "{{ lookup('env', 'VAULT_ROLE_ID') }}"
-v_secret_id: "{{ lookup('env', 'VAULT_SECRET_ID') }}"
+v_role_id: "{{ lookup('env', 'VAULT_ROLE_ID') | default('', true) }}"
+v_secret_id: "{{ lookup('env', 'VAULT_SECRET_ID') | default('', true) }}"
+url: "{{ lookup('env', 'VAULT_ADDR') }}"
 
 # Execute the lookup
 vault_kv2: "{{ lookup('community.hashi_vault.vault_kv2_get', 
                 secret_path, 
-                url=vault_url, 
+                url=url, 
                 engine_mount_point='secrets',
                 auth_method='approle',
                 role_id=v_role_id,
