@@ -6,8 +6,8 @@
     - ../vars/vault_lookup.yml
   vars:
     secret_path: "lab/linux/{{ inventory_hostname }}"
-    ansible_user: "{{ vault_kv2['username'] }}"
-    ansible_password: "{{ vault_kv2['password'] }}"
+    ansible_user: "{{ vault_kv2.data.data.username }}"
+    ansible_password: "{{ vault_kv2.data.data.password }}"
 
   tasks:
     - name: Ping
@@ -20,8 +20,8 @@
     - ../vars/vault_lookup.yml
   vars:
     secret_path: "lab/windows/{{ inventory_hostname }}"
-    ansible_user: "{{ vault_kv2['username'] }}"
-    ansible_password: "{{ vault_kv2['password'] }}"
+    ansible_user: "{{ vault_kv2.data.data.username }}"
+    ansible_password: "{{ vault_kv2.data.data.password }}"
 
   tasks:
     - name: Win ping

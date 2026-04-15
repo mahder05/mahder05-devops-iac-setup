@@ -4,9 +4,9 @@ vault_url: "http://vault.awx-mastery.svc.cluster.local:8200"
 v_role_id: "{{ lookup('env', 'VAULT_ROLE_ID') | default('', true) }}"
 v_secret_id: "{{ lookup('env', 'VAULT_SECRET_ID') | default('', true) }}"
 
-# Execute the lookup
-vault_response: "{{ lookup('community.hashi_vault.vault_kv2_get', 
-                vault_secret_path, 
+# Execute the lookup - use secret_path from the playbook
+vault_kv2: "{{ lookup('community.hashi_vault.vault_kv2_get', 
+                secret_path, 
                 url=vault_url, 
                 engine_mount_point='secrets',
                 auth_method='approle',
@@ -14,9 +14,9 @@ vault_response: "{{ lookup('community.hashi_vault.vault_kv2_get',
                 secret_id=v_secret_id) }}"
 
 # Map the data to connection variables
-ansible_user: "{{ vault_response.data.data.username }}"
-ansible_password: "{{ vault_response.data.data.password }}"
-ansible_become_password: "{{ vault_response.data.data.become_password }}"
+ansible_user: "{{ vault_kv2.data.data.username }}"
+ansible_password: "{{ vault_kv2.data.data.password }}"
+ansible_become_password: "{{ vault_kv2.data.data.become_password }}"
 
 
 # vault_kv2: "{{ lookup('community.hashi_vault.vault_kv2_get', secret_path, url=vault_url, auth_method='approle', role_id=vault_role_id, secret_id=vault_secret_id, engine_mount_point='secret').secret }}"
