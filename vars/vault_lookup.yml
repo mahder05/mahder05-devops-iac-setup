@@ -18,4 +18,4 @@ vault_kv2: "{{ lookup('community.hashi_vault.vault_kv2_get',
 # Map the data to connection variables
 ansible_user: "{{ vault_kv2.data.data.username }}"
 ansible_password: "{{ vault_kv2.data.data.password }}"
-ansible_become_password: "{{ vault_kv2.data.data.become_password }}"
+ansible_become_password: "{{ vault_kv2.data.data.get('become_password', '') }}"
