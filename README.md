@@ -68,6 +68,7 @@ This lab simulates a real-world enterprise environment on a local machine:
    <ins>_Configuration Files Reference_</ins>
 
    provider.tf - Configures the Kubernetes and Helm providers to point to your k3d-devops-lab context.
+   
    main.tf -  Defines the kubernetes_namespace resources and helm_release blocks for
     
     ArgoCD: argo-cd chart in argocd namespace
