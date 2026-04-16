@@ -49,6 +49,8 @@ This lab simulates a real-world enterprise environment on a local machine:
     /argocd - Application manifests and sync policies.
     /ansible - AWX Playbooks and job templates.
     /scripts - Automation for lab lifecycle (Start/Stop/Status).
+    /inventory - Hosts information to be used as source for AWX dynamic inventory.
+    /execution-environment - Ansible-Build image for Hashicorp vault lookup
 
 -> **Prepare the Engine (Colima)**
       
