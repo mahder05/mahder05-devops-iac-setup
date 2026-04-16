@@ -1,0 +1,21 @@
+---
+- name: Verify Terraform Pod
+  hosts: localhost
+  connection: local
+  vars:
+    # This tells Ansible to use whatever python is currently in your PATH
+    ansible_python_interpreter: "{{ ansible_playbook_python }}" 
+  tasks:
+    - name: Get Pod information from the new namespace
+      kubernetes.core.k8s_info:
+        kind: Pod
+        namespace: production-ready-lab
+        label_selectors:
+          - env=learning
+      register: pod_list
+
+    - name: Assert Pod is Running
+      assert:
+        that:
+          - "pod_list.resources[0].status.phase == 'Running'"
+        success_msg: "Ansible confirms: Terraform pod is healthy!"
