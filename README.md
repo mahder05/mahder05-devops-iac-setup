@@ -45,7 +45,9 @@ This lab simulates a real-world enterprise environment on a local machine:
        /ansible - AWX Playbooks and job templates.
        /scripts - Automation for lab lifecycle (Start/Stop/Status).
 
-5. Monitoring & StatusYou can check the health of all services at any time using:Bash
+5. Monitoring & Status
+
+   You can check the health of all services at any time using:
     
        ./devops_lab_status.sh
 
