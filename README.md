@@ -19,36 +19,45 @@ This lab simulates a real-world enterprise environment on a local machine:
     Grafana          http://localhost:3000   80 -> 3000      Observability & Metrics
 
 🚀 Getting Started
+
 1. Prerequisites
-    Colima
-    k3d
-    kubectl
-    Helm
+
+       Colima
+       k3d
+       kubectl
+       Helm
 
 2. Initialization
    To spin up the environment, ensure Colima is running and execute the master start script:
-   ./devops_lab_start.sh
+
+       ./devops_lab_start.sh
 
 3. Vault Unsealing
-Vault is configured for manual unseal to simulate production security. The devops_lab_start.sh script handles this automatically using the stored shards, flipping the Vault pod to 1/1 Ready.
+   
+   Vault is configured for manual unseal to simulate production security. The devops_lab_start.sh script handles this automatically using the stored shards, flipping the Vault      pod to 1/1 Ready.
 
-4. Project Structure/
-   /terraform - Infrastructure as Code for cluster resources.
-   /argocd - Application manifests and sync policies.
-   /ansible - AWX Playbooks and job templates.
-   /scripts - Automation for lab lifecycle (Start/Stop/Status).
+4. Project Structure
+   
+       /terraform - Infrastructure as Code for cluster resources.
+       /argocd - Application manifests and sync policies.
+       /ansible - AWX Playbooks and job templates.
+       /scripts - Automation for lab lifecycle (Start/Stop/Status).
 
 5. Monitoring & StatusYou can check the health of all services at any time using:Bash
-   ./devops_lab_status.sh
-This script validates:
-   🐳 Colima engine health
-   🏗️ K8s Cluster availability
-   🔌 Active Port-Forwarding tunnels
-   🌐 API responsiveness for Vault, ArgoCD, and AWX
+    
+       ./devops_lab_status.sh
+
+   This script validates:
+
+       🐳 Colima engine health
+       🏗️ K8s Cluster availability
+       🔌 Active Port-Forwarding tunnels
+       🌐 API responsiveness for Vault, ArgoCD, and AWX
 
 6. Security NoteThis lab uses a Root Token for initial Vault setup and an AppRole for AWX integration. In a production environment, Root Tokens should be revoked immediately after creating administrative policies.
 
 💡 Pro-Tips for the Lab:Persistence: Ensure your AWX and Vault instances are backed by Persistent Volume Claims (PVCs) if you want data to survive a k3d cluster stop.Shell Aliases: Add alias k='kubectl' to your .zshrc or .bashrc for faster navigation.
 
 👨‍💻 Author
+
 Maheshbabu Derangula
