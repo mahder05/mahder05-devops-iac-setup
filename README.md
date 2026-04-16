@@ -119,8 +119,9 @@ This lab simulates a real-world enterprise environment on a local machine:
     
 -> **Configure Secrets Engine (Vault)**
   
-   Once unsealed, log in and enable the Key-Value store:Bash# Login with Root Token
-
+   Once unsealed, log in and enable the Key-Value store:
+   
+    # Login with Root Token
     kubectl exec -it vault-0 -n awx-mastery -- vault login <ROOT_TOKEN>
 
 -> **Enable KV2 engine**
