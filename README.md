@@ -1,7 +1,9 @@
 🚀 DevOps Mastery Lab
+
 A local, production-grade DevOps environment powered by Kubernetes (k3s) and Colima, featuring a fully integrated CI/CD and Secrets Management stack.
 
 🏗️ Architecture Overview
+
 This lab simulates a real-world enterprise environment on a local machine:
 
     Container Runtime: Colima (macOS/Linux)
