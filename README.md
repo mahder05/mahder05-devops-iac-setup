@@ -102,7 +102,7 @@ This lab simulates a real-world enterprise environment on a local machine:
     
    Wait for the pods to reach Running state:
 
-    kubectl get pods -n awx-mastery -w3. 
+    kubectl get pods -n awx-mastery -w. 
     
 --> **Initialize & Unseal Vault**
 
