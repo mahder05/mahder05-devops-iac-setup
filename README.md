@@ -1,8 +1,8 @@
-🚀 DevOps Mastery Lab
+🚀 **DevOps Mastery Lab**
 
 A local, production-grade DevOps environment powered by Kubernetes (k3s) and Colima, featuring a fully integrated CI/CD and Secrets Management stack. This repository contains the Infrastructure-as-Code (IaC) and automation scripts to deploy a complete DevOps ecosystem locally. It leverages Colima for the container runtime and k3d for a lightweight Kubernetes distribution.
 
-🏗️ Architecture Overview
+🏗️ **Architecture Overview**
 
 This lab simulates a real-world enterprise environment on a local machine:
 
@@ -12,9 +12,10 @@ This lab simulates a real-world enterprise environment on a local machine:
     Automation/Configuration: AWX (Ansible)
     Secrets Management: HashiCorp Vault
 
-🏗️ The Stack
+🏗️ **The Stack**
 
     Category      Tool         Purpose
+    
     Runtime       Colima       Linux VM for macOS/Docker compatibility
     Orchestration k3d (k3s)    High-performance local Kubernetes cluster
     IaC           Terraform    Automated provisioning of K8s resources
@@ -23,25 +24,48 @@ This lab simulates a real-world enterprise environment on a local machine:
     Security      Vault        Centralized secrets management
     Observability Grafana      Visualization of cluster metrics
 
-🛠️ Tech Stack & Ports
+🛠️ **Tech Stack & Ports**
 
     Service          Access URL              Tunnel Port     Purpose**
+    
     ArgoCD           https://localhost:8081  443 -> 8081     GitOps & App Deployment
     AWX              http://localhost:8043   80 -> 8043      Ansible Automation Engine
     Vault            http://localhost:8200   8200 -> 8200    Secrets & Identity Management
     Grafana          http://localhost:3000   80 -> 3000      Observability & Metrics
 
 
-🚀 Installation & Deployment Steps. 
+🚀 **Installation & Deployment Steps.**
 
-Prerequisites
+**Prerequisites**
 
     Colima
     k3d
     kubectl
     Helm
 
-Configuration Files Reference
+**Project Structure**
+   
+    /terraform - Infrastructure as Code for cluster resources.
+    /argocd - Application manifests and sync policies.
+    /ansible - AWX Playbooks and job templates.
+    /scripts - Automation for lab lifecycle (Start/Stop/Status).
+
+-> **Prepare the Engine (Colima)**
+      
+   Colima provides the Docker/Kubernetes runtime.
+
+    colima start --cpu 4 --memory 8 --disk 100
+    
+-> **Provision the Cluster (k3d & Terraform)**
+   
+   Create the cluster and use Terraform to deploy the core services:
+
+    # Create the cluster
+    k3d cluster create devops-lab --port "8081:443@loadbalancer"
+
+-> **Provision Infrastructure (Terraform)**
+   
+   <ins>_Configuration Files Reference_</ins>
 
    provider.tf - Configures the Kubernetes and Helm providers to point to your k3d-devops-lab context.
    main.tf -  Defines the kubernetes_namespace resources and helm_release blocks for
@@ -54,28 +78,13 @@ Configuration Files Reference
    variables.tf & terraform.tfvars - used to manage cluster naming, toggling services on/off, and defining the list of namespaces to be created.
 
 
--> Prepare the Engine (Colima)
-      
-   Colima provides the Docker/Kubernetes runtime.
-
-    colima start --cpu 4 --memory 8 --disk 100
-    
--> Provision the Cluster (k3d & Terraform)
-   
-   Create the cluster and use Terraform to deploy the core services:
-
-    # Create the cluster
-    k3d cluster create devops-lab --port "8081:443@loadbalancer"
-
--> Provision Infrastructure (Terraform)
-
-Initialize and deploy the base namespaces and Helm charts (ArgoCD, Vault Operator, AWX Operator, Monitoring).
+   Initialize and deploy the base namespaces and Helm charts (ArgoCD, Vault Operator, AWX Operator, Monitoring).
 
     cd terraform/
     terraform init
     terraform apply -auto-approve
 
--> Deploy AWX InstanceThe Terraform script installs the AWX Operator.
+-> **Deploy AWX InstanceThe Terraform script installs the AWX Operator.**
 
    Now, you must deploy the actual AWX instance using a Kubernetes Custom Resource:
    
@@ -94,7 +103,9 @@ Initialize and deploy the base namespaces and Helm charts (ArgoCD, Vault Operato
 
     kubectl get pods -n awx-mastery -w3. 
     
---> Initialize & Unseal VaultSince we are using a persistent Vault setup (not dev mode), you must initialize it manually the first time:Bash# Initialize Vault and save the keys!
+--> **Initialize & Unseal Vault**
+
+   Since we are using a persistent Vault setup (not dev mode), you must initialize it manually the first time:Bash# Initialize Vault and save the keys!
 
     kubectl exec -it vault-0 -n awx-mastery -- vault operator init
 
@@ -103,74 +114,66 @@ Initialize and deploy the base namespaces and Helm charts (ArgoCD, Vault Operato
     kubectl exec -it vault-0 -n awx-mastery -- vault operator unseal <KEY_2>
     kubectl exec -it vault-0 -n awx-mastery -- vault operator unseal <KEY_3>
     
--> Configure Secrets Engine (Vault)
+-> **Configure Secrets Engine (Vault)**
   
-  Once unsealed, log in and enable the Key-Value store:Bash# Login with Root Token
+   Once unsealed, log in and enable the Key-Value store:Bash# Login with Root Token
 
     kubectl exec -it vault-0 -n awx-mastery -- vault login <ROOT_TOKEN>
 
--> Enable KV2 engine
+-> **Enable KV2 engine**
 
     kubectl exec -it vault-0 -n awx-mastery -- vault secrets enable -path=secret kv-v2
     
--> Accessing the Web UIs
+-> **Accessing the Web UIs**
 
-Run the start script to establish all port-forwarding tunnels:
+   Run the start script to establish all port-forwarding tunnels:
 
     ./devops_lab_start.sh
     
-    
     Tool            Credentials
+    
     ArgoCD          "User: admin | Pass: `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath=""{.data.password}"""
     AWX             "User: admin | Pass: `kubectl get secret awx-lab-admin-password -n awx-mastery -o jsonpath=""{.data.password}"""
     Vault           Use the Root Token generated during init
     Grafana         User: admin | Pass: prom-operator (default)
 
 
--> Continuous Delivery (ArgoCD)
+-> **Continuous Delivery (ArgoCD)**
    
    ArgoCD manages the state of the applications inside the cluster.
 
     Access: https://localhost:8081
     Default Login: admin
       
--> Automation (AWX)
+-> **Automation (AWX)**
    
    AWX is deployed via the AWX Operator and handles Ansible playbooks.
 
     Access: http://localhost:8043
     Default Login: admin
 
--> Integration
+-> **Integration**
 
    Connected to Vault via AppRole for secure credential injection.
 
--> Observability (Grafana)
+-> **Observability (Grafana)**
 
    The monitoring stack collects metrics via Prometheus.
 
     Access: http://localhost:3000 (via port-forward)
     Default Login: admin / admin
    
--> Initialization
+-> **Initialization**
    
    To spin up the environment, ensure Colima is running and execute the master start script:
 
        ./devops_lab_start.sh
 
--> Vault Unsealing
+-> **Vault Unsealing**
    
    Vault is configured for manual unseal to simulate production security. The devops_lab_start.sh script handles this automatically using the stored shards, flipping the Vault     pod to 1/1 Ready.
 
-
- -> Project Structure
-   
-       /terraform - Infrastructure as Code for cluster resources.
-       /argocd - Application manifests and sync policies.
-       /ansible - AWX Playbooks and job templates.
-       /scripts - Automation for lab lifecycle (Start/Stop/Status).
-
--> Monitoring & Status
+-> **Monitoring & Status**
 
    You can check the health of all services at any time using:
     
@@ -183,29 +186,30 @@ Run the start script to establish all port-forwarding tunnels:
        🔌 Active Port-Forwarding tunnels
        🌐 API responsiveness for Vault, ArgoCD, and AWX
 
--> Cleanup
+-> **Cleanup**
 
 To stop the lab and save system resources:
 
     ./devops_lab_stop.sh
 
 
-Security Note
+_<ins>Security Note</ins>_
 
    This lab uses a Root Token for initial Vault setup and an AppRole for AWX integration. In a production environment, Root Tokens should be revoked immediately after creating      administrative policies.
 
-💡 Troubleshooting TipIf terraform apply fails because the cluster isn't ready, ensure Colima is running with enough resources:
+💡 _Troubleshooting Tip_
+   
+   If terraform apply fails because the cluster isn't ready, ensure Colima is running with enough resources:
 
     colima start --cpu 4 --memory 8
 
-💡 Pro-Tips for the Lab: 
+💡 _Pro-Tips for the Lab:_ 
 
   Persistence: Ensure your AWX and Vault instances are backed by Persistent Volume Claims (PVCs) if you want data to survive a k3d cluster stop.
  
   Shell Aliases: Add alias k='kubectl' to your .zshrc or .bashrc for faster navigation.
   
 
-
 👨‍💻 Author
 
-Maheshbabu Derangula
+**Maheshbabu Derangula**
