@@ -62,7 +62,10 @@ This lab simulates a real-world enterprise environment on a local machine:
 
    This lab uses a Root Token for initial Vault setup and an AppRole for AWX integration. In a production environment, Root Tokens should be revoked immediately after creating      administrative policies.
 
-💡 Pro-Tips for the Lab:Persistence: Ensure your AWX and Vault instances are backed by Persistent Volume Claims (PVCs) if you want data to survive a k3d cluster stop.Shell Aliases: Add alias k='kubectl' to your .zshrc or .bashrc for faster navigation.
+💡 Pro-Tips for the Lab: 
+
+  Persistence: Ensure your AWX and Vault instances are backed by Persistent Volume Claims (PVCs) if you want data to survive a k3d cluster stop.
+  Shell Aliases: Add alias k='kubectl' to your .zshrc or .bashrc for faster navigation.
 
 
 👨‍💻 Author
