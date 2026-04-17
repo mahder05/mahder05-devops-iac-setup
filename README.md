@@ -13,25 +13,15 @@ A local, production-grade DevOps environment powered by Kubernetes (k3s) and Col
 
 This lab simulates a real-world enterprise environment on a local machine:
 
-| Component               | Tool / Technology       |
-|-------------------------|--------------------------|
-| Container Runtime       | Colima (macOS/Linux)     |
-| Orchestration           | k3s (via k3d)            |
-| Continuous Delivery     | ArgoCD                   |
-| Automation/Configuration| AWX (Ansible)            |
-| Secrets Management      | HashiCorp Vault          |
-
-🏗️ **The Stack**
-
-| Category       |Tool        | Purpose                                      |
-|----------------|------------|----------------------------------------------|
-| Runtime        | Colima     | Linux VM for macOS/Docker compatibility      |
-| Orchestration  | k3d (k3s)  | High-performance local Kubernetes cluster    |
-| IaC            | Terraform  | Automated provisioning of K8s resources      |
-| GitOps         | ArgoCD     | Declarative Continuous Delivery              |
-| Automation     | AWX        | Ansible-based configuration management       |
-| Security       | Vault      | Centralized secrets management               |
-| Observability  | Grafana    | Visualization of cluster metrics             |
+| Component                   | Tool / Technology        | Purpose                                      |
+|-----------------------------|--------------------------|----------------------------------------------|
+| Container Runtime           | Colima (macOS/Linux)     | Linux VM for macOS/Docker compatibility      |
+| Orchestration               | k3s (via k3d)            | High-performance local Kubernetes cluster    |   
+| Infrastructure as Code      | Terraform                | Automated provisioning of K8s resources      |
+| Continuous Delivery/GitOps  | ArgoCD                   | Declarative Continuous Delivery              |
+| Automation/Configuration    | AWX (Ansible)            | Ansible-based configuration management       |
+| Secrets Management/Security | HashiCorp Vault          | Centralized secrets management               |     
+| Observability               | Grafana                  | Visualization of cluster metrics             |
 
 🛠️ **Tech Stack & Ports**
 
@@ -42,18 +32,17 @@ This lab simulates a real-world enterprise environment on a local machine:
 | Vault    | http://localhost:8200    | 8200 → 8200  | Secrets & Identity Management    |
 | Grafana  | http://localhost:3000    | 80 → 3000    | Observability & Metrics          |
 
-
 🚀 **Installation & Deployment Steps.**
 
 **Prerequisites**
 
+    Homebrew
     Colima
     k3d
     kubectl
     Helm
     Terraform
-    Homebrew
-
+    
 **Project Structure**
 
     ├── terraform/             # Infrastructure as Code
@@ -117,7 +106,7 @@ This lab simulates a real-world enterprise environment on a local machine:
     
    Wait for the pods to reach Running state:
 
-    kubectl get pods -n awx-mastery -w. 
+    kubectl get pods -n awx-mastery -w 
     
 --> **Initialize & Unseal Vault**
 
