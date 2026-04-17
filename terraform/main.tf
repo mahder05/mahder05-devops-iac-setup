@@ -1,4 +1,11 @@
 # --- Infrastructure: k3d Cluster ---
+resource "kubernetes_namespace" "namespaces" {
+  for_each = toset(["awx-mastery", "argocd", "monitoring"])
+  metadata {
+    name = each.key
+  }
+}
+
 resource "shell_script" "k3d_cluster" {
   lifecycle_commands {
     create = "k3d cluster create devops-lab --agents 2 -p '8080:80@loadbalancer' --k3s-arg '--disable=traefik@server:0'"
@@ -6,70 +13,36 @@ resource "shell_script" "k3d_cluster" {
   }
 }
 
-# --- Secret Management: Vault ---
 resource "helm_release" "vault" {
-  depends_on       = [shell_script.k3d_cluster]
-  name             = "vault"
-  repository       = "https://helm.releases.hashicorp.com"
-  chart            = "vault"
-  namespace        = "awx-mastery"
-  create_namespace = true
-
-  set {
-    name  = "server.dev.enabled"
-    value = "true"
-  }
+  name       = "vault"
+  repository = "https://helm.releases.hashicorp.com" # Required to fetch from internet
+  chart      = "vault"                            # The name of the chart in the repo
+  namespace  = "awx-mastery"
+  
+  # Ensure you DO NOT have a 'chart = "./vault"' line
+  # If you have a local folder named 'vault', rename it to 'vault-config' 
+  # to prevent Terraform from getting confused.
 }
 
 # --- GitOps: ArgoCD ---
 resource "helm_release" "argocd" {
-  depends_on       = [shell_script.k3d_cluster]
-  name             = "argocd"
-  repository       = "https://argoproj.github.io/argo-helm"
-  chart            = "argo-cd"
-  namespace        = "argocd"
-  create_namespace = true
-  version          = "5.52.0"
+  depends_on = [shell_script.k3d_cluster, kubernetes_namespace.namespaces]
+  name       = "argocd"
+  repository = "https://argoproj.github.io/argo-helm"
+  chart      = "argo-cd"
+  namespace  = "argocd"
 }
 
-# --- AWX: Custom Credential Type ---
-resource "awx_credential_type" "hashivault_dynamic_approle" {
-  name        = "HashiVault Dynamic Approle"
-  description = "Dynamic AppRole authentication for HashiCorp Vault"
-  kind        = "cloud"
-
-  inputs = jsonencode({
-    fields = [
-      { id = "vault_url",  type = "string", label = "Vault URL" },
-      { id = "role_id",    type = "string", label = "Role ID" },
-      { id = "secret_id",  type = "string", label = "Secret ID", secret = true }
-    ]
-    required = ["vault_url", "role_id", "secret_id"]
-  })
-
-  injectors = jsonencode({
-    env = {
-      VAULT_ADDR      = "{{ vault_url }}"
-      VAULT_ROLE_ID   = "{{ role_id }}"
-      VAULT_SECRET_ID = "{{ secret_id }}"
-    }
-  })
+# --- Monitoring ---
+resource "helm_release" "monitoring" {
+  name       = "monitoring"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "kube-prometheus-stack"
+  namespace  = "monitoring"
+  depends_on = [kubernetes_namespace.namespaces]
 }
 
-# --- AWX: Global AppRole Credential ---
-resource "awx_credential" "vault_global_approle" {
-  name             = "Hashi Vault Global AppRole"
-  credential_type  = awx_credential_type.hashivault_dynamic_approle.id
-  organization     = 1 
-
-  inputs = jsonencode({
-    vault_url = "http://vault.awx-mastery.svc.cluster.local:8200"
-    role_id   = "cee77d55-b0dc-32ec-f28a-d5df6639ffd3"
-    secret_id = var.vault_approle_secret_id
-  })
-}
-
-# --- GitOps Application: Hello World ---
+# --- GitOps Application ---
 resource "kubernetes_manifest" "hello_world_app" {
   depends_on = [helm_release.argocd]
   manifest = {
@@ -82,7 +55,7 @@ resource "kubernetes_manifest" "hello_world_app" {
     spec = {
       project = "default"
       source = {
-        repoURL        = "https://github.com/mahder05/mahder05-lab-automation.git"
+        repoURL        = "https://github.com/mahder05/mahder05-devops-iac-setup.git"
         targetRevision = "HEAD"
         path           = "guestbook"
       }
@@ -94,36 +67,5 @@ resource "kubernetes_manifest" "hello_world_app" {
         automated = { prune = true, selfHeal = true }
       }
     }
-  }
-}
-
-# --- Variables ---
-variable "vault_approle_secret_id" {
-  type      = string
-  sensitive = true
-}
-
-resource "helm_release" "monitoring" {
-  name             = "monitoring"
-  repository       = "https://prometheus-community.github.io/helm-charts"
-  chart            = "kube-prometheus-stack"
-  namespace        = "monitoring"
-  create_namespace = true
-
-  # Set a static password so you don't have to hunt for it in secrets
-  set {
-    name  = "grafana.adminPassword"
-    value = "admin123" 
-  }
-
-  # Optimize for local lab (lower resource usage)
-  set {
-    name  = "prometheus.prometheusSpec.resources.requests.memory"
-    value = "512Mi"
-  }
-
-  set {
-    name  = "grafana.sidecar.dashboards.enabled"
-    value = "true"
   }
 }
