@@ -2,20 +2,19 @@
 - name: Windows Host Setup and Management
   hosts: windows
   gather_facts: false
-  # REMOVED: vault_url, vault_role_id, etc. from here 
-  # because they are now injected via the Environment by AWX.
+  # No vars block needed - using environment variables from AWX
 
   tasks:
     - name: Fetch Admin credentials via AppRole
       community.hashi_vault.vault_kv2_get:
-        # Use 'lookup' to grab the variables from the Environment (env)
+        # Pull from environment variables injected by the AWX Credential
         url: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR') }}"
         role_id: "{{ lookup('ansible.builtin.env', 'VAULT_ROLE_ID') }}"
         secret_id: "{{ lookup('ansible.builtin.env', 'VAULT_SECRET_ID') }}"
-        # Added /data/ to the path as it is usually required for KV2 engines
-        path: "secret/data/lab/windows/{{ inventory_hostname }}"
-        engine_mount_point: secret
-        auth_method: approle
+        # CLEAN PATH: Relative to the mount point, no leading 'secret/' or 'data/'
+        path: "lab/windows/{{ inventory_hostname }}"
+        engine_mount_point: "secret"
+        auth_method: "approle"
       register: win_vault
       delegate_to: localhost
 

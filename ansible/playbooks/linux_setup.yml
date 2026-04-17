@@ -8,14 +8,14 @@
   tasks:
     - name: Fetch credentials using AppRole
       community.hashi_vault.vault_kv2_get:
-        # Use lookups to pull values from the OS environment variables injected by AWX
         url: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR') }}"
         role_id: "{{ lookup('ansible.builtin.env', 'VAULT_ROLE_ID') }}"
         secret_id: "{{ lookup('ansible.builtin.env', 'VAULT_SECRET_ID') }}"
-        # Added /data/ to the path for KV2 engine compatibility
-        path: "secret/data/lab/linux/{{ inventory_hostname }}"
-        engine_mount_point: secret
-        auth_method: approle
+        # 1. Provide the path relative to the engine (WITHOUT 'secret/' or 'data/')
+        path: "lab/linux/{{ inventory_hostname }}"
+        # 2. Explicitly define the mount point
+        engine_mount_point: "secret"
+        auth_method: "approle"
       register: vault_result
       delegate_to: localhost
       retries: 3
