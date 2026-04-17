@@ -2,36 +2,45 @@
 
 A local, production-grade DevOps environment powered by Kubernetes (k3s) and Colima, featuring a fully integrated CI/CD and Secrets Management stack. This repository contains the Infrastructure-as-Code (IaC) and automation scripts to deploy a complete DevOps ecosystem locally. It leverages Colima for the container runtime and k3d for a lightweight Kubernetes distribution.
 
+![Kubernetes](https://img.shields.io/badge/Kubernetes-k3s-blue?logo=kubernetes)
+![Terraform](https://img.shields.io/badge/IaC-Terraform-623CE4?logo=terraform)
+![Ansible](https://img.shields.io/badge/Automation-AWX-red?logo=ansible)
+![ArgoCD](https://img.shields.io/badge/GitOps-ArgoCD-orange?logo=argo)
+![Vault](https://img.shields.io/badge/Security-Vault-black?logo=vault)
+![Grafana](https://img.shields.io/badge/Observability-Grafana-F46800?logo=grafana)
+
 🏗️ **Architecture Overview**
 
 This lab simulates a real-world enterprise environment on a local machine:
 
-    Container Runtime: Colima (macOS/Linux)
-    Orchestration: k3s (via k3d)
-    Continuous Delivery: ArgoCD
-    Automation/Configuration: AWX (Ansible)
-    Secrets Management: HashiCorp Vault
+| Component               | Tool / Technology       |
+|-------------------------|--------------------------|
+| Container Runtime       | Colima (macOS/Linux)     |
+| Orchestration           | k3s (via k3d)            |
+| Continuous Delivery     | ArgoCD                   |
+| Automation/Configuration| AWX (Ansible)            |
+| Secrets Management      | HashiCorp Vault          |
 
 🏗️ **The Stack**
 
-    Category      Tool         Purpose
-    
-    Runtime       Colima       Linux VM for macOS/Docker compatibility
-    Orchestration k3d (k3s)    High-performance local Kubernetes cluster
-    IaC           Terraform    Automated provisioning of K8s resources
-    GitOps        ArgoCD       Declarative Continuous Delivery
-    Automation    AWX          Ansible-based configuration management
-    Security      Vault        Centralized secrets management
-    Observability Grafana      Visualization of cluster metrics
+| Category       |Tool        | Purpose                                      |
+|----------------|------------|----------------------------------------------|
+| Runtime        | Colima     | Linux VM for macOS/Docker compatibility      |
+| Orchestration  | k3d (k3s)  | High-performance local Kubernetes cluster    |
+| IaC            | Terraform  | Automated provisioning of K8s resources      |
+| GitOps         | ArgoCD     | Declarative Continuous Delivery              |
+| Automation     | AWX        | Ansible-based configuration management       |
+| Security       | Vault      | Centralized secrets management               |
+| Observability  | Grafana    | Visualization of cluster metrics             |
 
 🛠️ **Tech Stack & Ports**
 
-    Service          Access URL              Tunnel Port     Purpose**
-    
-    ArgoCD           https://localhost:8081  443 -> 8081     GitOps & App Deployment
-    AWX              http://localhost:8043   80 -> 8043      Ansible Automation Engine
-    Vault            http://localhost:8200   8200 -> 8200    Secrets & Identity Management
-    Grafana          http://localhost:3000   80 -> 3000      Observability & Metrics
+| Service  | Access URL               | Tunnel Port   | Purpose                          |
+|----------|--------------------------|--------------|----------------------------------|
+| ArgoCD   | https://localhost:8081   | 443 → 8081   | GitOps & App Deployment          |
+| AWX      | http://localhost:8043    | 80 → 8043    | Ansible Automation Engine        |
+| Vault    | http://localhost:8200    | 8200 → 8200  | Secrets & Identity Management    |
+| Grafana  | http://localhost:3000    | 80 → 3000    | Observability & Metrics          |
 
 
 🚀 **Installation & Deployment Steps.**
@@ -42,17 +51,19 @@ This lab simulates a real-world enterprise environment on a local machine:
     k3d
     kubectl
     Helm
+    Terraform
+    Homebrew
 
-**Project Structure**
-   
-    /terraform - Infrastructure as Code for cluster resources.
-    /argocd - Application manifests and sync policies.
-    /ansible - AWX Playbooks and job templates.
-    /scripts - Automation for lab lifecycle (Start/Stop/Status).
-    /inventory - Hosts information to be used as source for AWX dynamic inventory.
-    /execution-environment - Ansible-Build image for Hashicorp vault lookup
+**Project Structure** ## 📁 Project Structure.
 
--> **Prepare the Engine (Colima)**
+    ├── terraform/             # Infrastructure as Code
+    ├── argocd/                # GitOps manifests
+    ├── ansible/               # AWX playbooks
+    ├── scripts/               # Start/Stop/Status automation
+    ├── inventory/             # Dynamic inventory
+    └── execution-environment/ # Ansible EE (Vault integration)
+
+ **Prepare the Engine (Colima)**
       
    Colima provides the Docker/Kubernetes runtime.
 
