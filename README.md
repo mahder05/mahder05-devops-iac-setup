@@ -1,4 +1,4 @@
-🚀 **DevOps Mastery Lab**
+# 🚀 DevOps Mastery Lab
 
 A local, production-grade DevOps environment powered by Kubernetes (k3s) and Colima, featuring a fully integrated CI/CD and Secrets Management stack. This repository contains the Infrastructure-as-Code (IaC) and automation scripts to deploy a complete DevOps ecosystem locally. It leverages Colima for the container runtime and k3d for a lightweight Kubernetes distribution.
 
@@ -9,7 +9,7 @@ A local, production-grade DevOps environment powered by Kubernetes (k3s) and Col
 ![Vault](https://img.shields.io/badge/Security-Vault-black?logo=vault)
 ![Grafana](https://img.shields.io/badge/Observability-Grafana-F46800?logo=grafana)
 
-🏗️ **Architecture Overview**
+## 🏗️ **Architecture Overview**
 
 This lab simulates a real-world enterprise environment on a local machine:
 
@@ -23,7 +23,7 @@ This lab simulates a real-world enterprise environment on a local machine:
 | Secrets Management/Security | HashiCorp Vault          | Centralized secrets management               |     
 | Observability               | Grafana                  | Visualization of cluster metrics             |
 
-🛠️ **Tech Stack & Ports**
+## 🛠️ **Tech Stack & Ports**
 
 | Service  | Access URL               | Tunnel Port   | Purpose                          |
 |----------|--------------------------|--------------|----------------------------------|
@@ -32,7 +32,7 @@ This lab simulates a real-world enterprise environment on a local machine:
 | Vault    | http://localhost:8200    | 8200 → 8200  | Secrets & Identity Management    |
 | Grafana  | http://localhost:3000    | 80 → 3000    | Observability & Metrics          |
 
-🚀 **Installation & Deployment Steps.**
+## 🚀 Installation & Deployment Steps.
 
 **Prerequisites**
 
@@ -52,20 +52,20 @@ This lab simulates a real-world enterprise environment on a local machine:
     ├── inventory/             # Dynamic inventory
     └── execution-environment/ # Ansible EE (Vault integration)
 
- **Prepare the Engine (Colima)**
+**Step 1: Prepare the Engine (Colima)**
       
    Colima provides the Docker/Kubernetes runtime.
 
     colima start --cpu 4 --memory 8 --disk 100
     
---> **Provision the Cluster (k3d & Terraform)**
+**Step 2: Provision the Cluster (k3d & Terraform)**
    
    Create the cluster and use Terraform to deploy the core services:
 
     # Create the cluster
     k3d cluster create devops-lab --port "8081:443@loadbalancer"
 
---> **Provision Infrastructure (Terraform)**
+**Step 3: Provision Infrastructure (Terraform)**
    
    <ins>_Configuration Files Reference_</ins>
 
@@ -87,7 +87,7 @@ This lab simulates a real-world enterprise environment on a local machine:
     terraform init
     terraform apply -auto-approve
 
---> **Deploy AWX Instance**
+**Step 4: Deploy AWX Instance**
    
    The Terraform script installs the AWX Operator.
 
@@ -108,7 +108,7 @@ This lab simulates a real-world enterprise environment on a local machine:
 
     kubectl get pods -n awx-mastery -w 
     
---> **Initialize & Unseal Vault**
+**Step 5: Initialize & Unseal Vault**
 
    Since we are using a persistent Vault setup (not dev mode), you must initialize it manually the first time:Bash# Initialize Vault and save the keys!
 
@@ -119,67 +119,69 @@ This lab simulates a real-world enterprise environment on a local machine:
     kubectl exec -it vault-0 -n awx-mastery -- vault operator unseal <KEY_2>
     kubectl exec -it vault-0 -n awx-mastery -- vault operator unseal <KEY_3>
     
---> **Configure Secrets Engine (Vault)**
+**Step 6: Configure Secrets Engine (Vault)**
   
    Once unsealed, log in and enable the Key-Value store:
    
     # Login with Root Token
     kubectl exec -it vault-0 -n awx-mastery -- vault login <ROOT_TOKEN>
 
---> **Enable KV2 engine**
+**Step 7: Enable KV2 engine**
 
     kubectl exec -it vault-0 -n awx-mastery -- vault secrets enable -path=secret kv-v2
     
---> **Accessing the Web UIs**
+**Step 8: Accessing the Web UIs**
 
    Run the start script to establish all port-forwarding tunnels:
 
     ./devops_lab_start.sh
     
-    Tool            Credentials
-    
-    ArgoCD          "User: admin | Pass: `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath=""{.data.password}"""
-    AWX             "User: admin | Pass: `kubectl get secret awx-lab-admin-password -n awx-mastery -o jsonpath=""{.data.password}"""
-    Vault           Use the Root Token generated during init
-    Grafana         User: admin | Pass: prom-operator (default)
+ 🔑 Default Credentials
+
+| Tool    | Credentials |
+|---------|-------------|
+| ArgoCD  | User: `admin` <br> Pass: `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}"` |
+| AWX     | User: `admin` <br> Pass: `kubectl get secret awx-lab-admin-password -n awx-mastery -o jsonpath="{.data.password}"` |
+| Vault   | Use the Root Token generated during initialization |
+| Grafana | User: `admin` <br> Pass: `prom-operator` (default) |
 
 
---> **Continuous Delivery (ArgoCD)**
+   **Continuous Delivery (ArgoCD)**
    
    ArgoCD manages the state of the applications inside the cluster.
 
     Access: https://localhost:8081
     Default Login: admin
       
---> **Automation (AWX)**
+   **Automation (AWX)**
    
    AWX is deployed via the AWX Operator and handles Ansible playbooks.
 
     Access: http://localhost:8043
     Default Login: admin
 
---> **Integration**
+   **Integration**
 
    Connected to Vault via AppRole for secure credential injection.
 
---> **Observability (Grafana)**
+   **Observability (Grafana)**
 
    The monitoring stack collects metrics via Prometheus.
 
     Access: http://localhost:3000 (via port-forward)
     Default Login: admin / admin
    
---> **Initialization**
+**Step 9: Initialization**
    
    To spin up the environment, ensure Colima is running and execute the master start script:
 
        ./devops_lab_start.sh
 
---> **Vault Unsealing**
+**Step 10: Vault Unsealing**
    
    Vault is configured for manual unseal to simulate production security. The devops_lab_start.sh script handles this automatically using the stored shards, flipping the Vault     pod to 1/1 Ready.
 
---> **Monitoring & Status**
+**Step 11: Monitoring & Status**
 
    You can check the health of all services at any time using:
     
@@ -192,7 +194,7 @@ This lab simulates a real-world enterprise environment on a local machine:
        🔌 Active Port-Forwarding tunnels
        🌐 API responsiveness for Vault, ArgoCD, and AWX
 
---> **Cleanup**
+**Step 12: Cleanup**
 
 To stop the lab and save system resources:
 
