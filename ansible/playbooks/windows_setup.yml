@@ -18,8 +18,8 @@
 
     - name: Configure WinRM connection facts
       set_fact:
-        ansible_user: "{{ win_vault.data.data.ansible_user }}"
-        ansible_password: "{{ win_vault.data.data.ansible_password }}"
+        ansible_user: "{{ win_vault.data.data.username }}"
+        ansible_password: "{{ win_vault.data.data.password }}"
         ansible_connection: winrm
         ansible_winrm_transport: basic
         ansible_winrm_port: 5985
