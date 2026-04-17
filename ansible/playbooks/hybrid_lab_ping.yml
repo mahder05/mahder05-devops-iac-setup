@@ -1,12 +1,12 @@
 ---
 - name: Hybrid Lab Connectivity Check
-  hosts: all
+  hosts: linux, windows
   gather_facts: false
   
   pre_tasks:
     - name: Dynamically fetch credentials from Vault
-      include_vars: vault_lookup.yml
-      # This file now successfully finds VAULT_ADDR and tokens in the environment
+      include_vars: 
+        file: ../vars/vault_lookup.yml # Update this path to match your repo!
 
   tasks:
     - name: Ping Linux
