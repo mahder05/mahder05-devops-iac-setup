@@ -3,28 +3,6 @@
   hosts: linux, windows
   gather_facts: false
   tasks:
-    - name: Vault Lookup
-      community.hashi_vault.vault_kv2_get:
-        url: "{{ vault_url }}"
-        path: "lab/{{ 'linux' if 'linux' in group_names else 'windows' }}/{{ inventory_hostname }}"
-        engine_mount_point: secret
-        auth_method: approle
-        role_id: "{{ vault_role_id }}"
-        secret_id: "{{ vault_secret_id }}"
-      register: creds
-      delegate_to: localhost
-
-    - name: Set Connection Facts
-      set_fact:
-        ansible_user: "{{ creds.data.data.ansible_user }}"
-        ansible_password: "{{ creds.data.data.ansible_password }}"
-        # Protocol switch for Windows
-        ansible_connection: "{{ 'winrm' if 'windows' in group_names else 'ssh' }}"
-        ansible_winrm_transport: basic
-        ansible_winrm_port: 5985
-        ansible_winrm_scheme: http
-        ansible_winrm_server_cert_validation: ignore
-      
     - name: Ping Linux
       ansible.builtin.ping:
       when: "'linux' in group_names"
@@ -32,3 +10,39 @@
     - name: Ping Windows
       ansible.windows.win_ping:
       when: "'windows' in group_names"
+
+
+      
+# - name: Hybrid Lab Connectivity Check
+#   hosts: linux, windows
+#   gather_facts: false
+#   tasks:
+#     - name: Vault Lookup
+#       community.hashi_vault.vault_kv2_get:
+#         url: "{{ vault_url }}"
+#         path: "lab/{{ 'linux' if 'linux' in group_names else 'windows' }}/{{ inventory_hostname }}"
+#         engine_mount_point: secret
+#         auth_method: approle
+#         role_id: "{{ vault_role_id }}"
+#         secret_id: "{{ vault_secret_id }}"
+#       register: creds
+#       delegate_to: localhost
+
+#     - name: Set Connection Facts
+#       set_fact:
+#         ansible_user: "{{ creds.data.data.ansible_user }}"
+#         ansible_password: "{{ creds.data.data.ansible_password }}"
+#         # Protocol switch for Windows
+#         ansible_connection: "{{ 'winrm' if 'windows' in group_names else 'ssh' }}"
+#         ansible_winrm_transport: basic
+#         ansible_winrm_port: 5985
+#         ansible_winrm_scheme: http
+#         ansible_winrm_server_cert_validation: ignore
+      
+#     - name: Ping Linux
+#       ansible.builtin.ping:
+#       when: "'linux' in group_names"
+
+#     - name: Ping Windows
+#       ansible.windows.win_ping:
+#       when: "'windows' in group_names"

@@ -5,11 +5,11 @@
   tasks:
     - name: Fetch a secret from Vault
       community.hashi_vault.vault_kv2_get:
-        path: "secret/data/test" # Adjust this to your actual secret path
-        # No URL or Token needed here - the Injector handles it!
+        engine_mount_point: "secret"
+        path: "test" # Path updated to standard KV-v2 format
       register: vault_secret
 
-    - name: Debug Secret (Masked)
+    - name: Debug Secret
       debug:
-        msg: "The secret has been fetched successfully!"
+        msg: "Vault Connection Successful!"
       when: vault_secret.data.data is defined
