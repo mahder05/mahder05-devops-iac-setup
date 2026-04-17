@@ -54,7 +54,7 @@ This lab simulates a real-world enterprise environment on a local machine:
     Terraform
     Homebrew
 
-**Project Structure** ## 📁 Project Structure.
+**Project Structure**
 
     ├── terraform/             # Infrastructure as Code
     ├── argocd/                # GitOps manifests
@@ -69,14 +69,14 @@ This lab simulates a real-world enterprise environment on a local machine:
 
     colima start --cpu 4 --memory 8 --disk 100
     
--> **Provision the Cluster (k3d & Terraform)**
+--> **Provision the Cluster (k3d & Terraform)**
    
    Create the cluster and use Terraform to deploy the core services:
 
     # Create the cluster
     k3d cluster create devops-lab --port "8081:443@loadbalancer"
 
--> **Provision Infrastructure (Terraform)**
+--> **Provision Infrastructure (Terraform)**
    
    <ins>_Configuration Files Reference_</ins>
 
@@ -98,7 +98,7 @@ This lab simulates a real-world enterprise environment on a local machine:
     terraform init
     terraform apply -auto-approve
 
--> **Deploy AWX Instance**
+--> **Deploy AWX Instance**
    
    The Terraform script installs the AWX Operator.
 
@@ -130,18 +130,18 @@ This lab simulates a real-world enterprise environment on a local machine:
     kubectl exec -it vault-0 -n awx-mastery -- vault operator unseal <KEY_2>
     kubectl exec -it vault-0 -n awx-mastery -- vault operator unseal <KEY_3>
     
--> **Configure Secrets Engine (Vault)**
+--> **Configure Secrets Engine (Vault)**
   
    Once unsealed, log in and enable the Key-Value store:
    
     # Login with Root Token
     kubectl exec -it vault-0 -n awx-mastery -- vault login <ROOT_TOKEN>
 
--> **Enable KV2 engine**
+--> **Enable KV2 engine**
 
     kubectl exec -it vault-0 -n awx-mastery -- vault secrets enable -path=secret kv-v2
     
--> **Accessing the Web UIs**
+--> **Accessing the Web UIs**
 
    Run the start script to establish all port-forwarding tunnels:
 
@@ -155,42 +155,42 @@ This lab simulates a real-world enterprise environment on a local machine:
     Grafana         User: admin | Pass: prom-operator (default)
 
 
--> **Continuous Delivery (ArgoCD)**
+--> **Continuous Delivery (ArgoCD)**
    
    ArgoCD manages the state of the applications inside the cluster.
 
     Access: https://localhost:8081
     Default Login: admin
       
--> **Automation (AWX)**
+--> **Automation (AWX)**
    
    AWX is deployed via the AWX Operator and handles Ansible playbooks.
 
     Access: http://localhost:8043
     Default Login: admin
 
--> **Integration**
+--> **Integration**
 
    Connected to Vault via AppRole for secure credential injection.
 
--> **Observability (Grafana)**
+--> **Observability (Grafana)**
 
    The monitoring stack collects metrics via Prometheus.
 
     Access: http://localhost:3000 (via port-forward)
     Default Login: admin / admin
    
--> **Initialization**
+--> **Initialization**
    
    To spin up the environment, ensure Colima is running and execute the master start script:
 
        ./devops_lab_start.sh
 
--> **Vault Unsealing**
+--> **Vault Unsealing**
    
    Vault is configured for manual unseal to simulate production security. The devops_lab_start.sh script handles this automatically using the stored shards, flipping the Vault     pod to 1/1 Ready.
 
--> **Monitoring & Status**
+--> **Monitoring & Status**
 
    You can check the health of all services at any time using:
     
@@ -203,7 +203,7 @@ This lab simulates a real-world enterprise environment on a local machine:
        🔌 Active Port-Forwarding tunnels
        🌐 API responsiveness for Vault, ArgoCD, and AWX
 
--> **Cleanup**
+--> **Cleanup**
 
 To stop the lab and save system resources:
 
