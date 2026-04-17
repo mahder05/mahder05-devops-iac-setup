@@ -28,7 +28,7 @@ This lab simulates a real-world enterprise environment on a local machine:
 | Service  | Access URL               | Tunnel Port   | Purpose                          |
 |----------|--------------------------|--------------|----------------------------------|
 | ArgoCD   | https://localhost:8081   | 443 → 8081   | GitOps & App Deployment          |
-| AWX      | http://localhost:8043    | 80 → 8043    | Ansible Automation Engine        |
+| AWX      | http://localhost:8083    | 80 → 8043    | Ansible Automation Engine        |
 | Vault    | http://localhost:8200    | 8200 → 8200  | Secrets & Identity Management    |
 | Grafana  | http://localhost:3000    | 80 → 3000    | Observability & Metrics          |
 
