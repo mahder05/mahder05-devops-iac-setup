@@ -1,36 +1,29 @@
 terraform {
   required_providers {
+    # This maps 'shell_...' resources to the Scott Winkler provider instead of Hashicorp
     shell = {
       source  = "scottwinkler/shell"
-      version = "1.7.10"
+      version = "~> 1.7.0"
+    }
+    # This maps 'awx_...' resources to the Denouche provider instead of Hashicorp
+    awx = {
+      source  = "denouche/awx"
+      version = "~> 0.20.0"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "2.25.2"
+      version = "~> 2.0"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "2.12.1"
-    }
-    awx = {
-      source  = "tfbrew/awx"
-      version = "~> 1.0"
+      version = "~> 2.0"
     }
   }
 }
 
+# Now define the empty provider blocks so Terraform knows they are initialized
+provider "shell" {}
+provider "awx" {}
 provider "kubernetes" {
-  config_path = "~/.kube/config"
-}
-
-provider "helm" {
-  kubernetes {
-    config_path = "~/.kube/config"
-  }
-}
-
-provider "awx" {
-  endpoint = "http://localhost:8083"
-  username = "admin"
-  password = var.awx_password
+  # config_path = "~/.kube/config"
 }
