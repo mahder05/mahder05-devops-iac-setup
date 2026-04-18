@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: awx-metrics-utility-configmap
+  namespace: awx-mastery
+data:
+  # These are standard defaults for the utility gatherer
+  # You can add specific AWX settings here if needed later
+  AWX_METRICS_ENABLED: "true"
