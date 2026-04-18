@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: awx-job-alerts
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: monitoring
+spec:
+  groups:
+  - name: awx.rules
+    rules:
+    - alert: AWXJobFailed
+      expr: awx_status_total{status="failed"} > 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "AWX Job Failed on {{ $labels.instance }}"
+        description: "An Ansible job has been in a failed state for over 5 minutes."

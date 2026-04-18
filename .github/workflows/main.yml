@@ -1,0 +1,13 @@
+name: GitOps Sync
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger ArgoCD Sync
+        run: |
+          echo "In a real setup, we would call the ArgoCD API here."
+          echo "For now, ArgoCD will see this push and sync automatically!"
