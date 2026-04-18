@@ -9,32 +9,6 @@
       include_vars: 
         file: ../vars/vault_lookup.yml
 
-    # - name: Fetch credentials using AppRole
-    #   community.hashi_vault.vault_kv2_get:
-    #     url: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR') }}"
-    #     role_id: "{{ lookup('ansible.builtin.env', 'VAULT_ROLE_ID') }}"
-    #     secret_id: "{{ lookup('ansible.builtin.env', 'VAULT_SECRET_ID') }}"
-    #     path: "lab/linux/{{ inventory_hostname }}"
-    #     engine_mount_point: "secret"
-    #     auth_method: "approle"
-    #   register: vault_result
-    #   delegate_to: localhost
-    #   retries: 3
-    #   delay: 5
-    #   until: vault_result is not failed
-    
-    # - name: Debug Vault Secret Content
-    #   ansible.builtin.debug:
-    #     var: vault_result.data.data
-
-    # - name: Set connection facts
-    #   set_fact:
-    #     # Use 'username' and 'password' since that is how they are stored in Vault
-    #     ansible_user: "{{ vault_result.data.data.username }}"
-    #     ansible_password: "{{ vault_result.data.data.password }}"
-    #     # Map the same password to become_password for sudo access
-    #     ansible_become_password: "{{ vault_result.data.data.password }}"
-
 - name: Universal Linux Host Setup and Management
   hosts: linux
   become: true
