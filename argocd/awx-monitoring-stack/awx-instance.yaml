@@ -1,7 +1,7 @@
 apiVersion: awx.ansible.com/v1beta1
 kind: AWX
 metadata:
-  name: awx
+  name: awx-dev
   namespace: awx-mastery
 spec:
   service_type: ClusterIP
