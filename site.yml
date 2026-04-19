@@ -5,18 +5,37 @@
 
   tasks:
     - name: Fetch credentials using AppRole
-      community.hashi_vault.vault_kv2_get:
-        url: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR') }}"
-        role_id: "{{ lookup('ansible.builtin.env', 'VAULT_ROLE_ID') }}"
-        secret_id: "{{ lookup('ansible.builtin.env', 'VAULT_SECRET_ID') }}"
-        path: "lab/linux/{{ inventory_hostname }}"
-        engine_mount_point: "secret"
-        auth_method: "approle"
-      register: vault_result
-      delegate_to: localhost
-      retries: 3
-      delay: 5
-      until: vault_result is not failed
+      block:
+        - name: Authenticate with Vault AppRole
+          ansible.builtin.uri:
+            url: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR') }}/v1/auth/approle/login"
+            method: POST
+            body_format: json
+            body:
+              role_id: "{{ lookup('ansible.builtin.env', 'VAULT_ROLE_ID') }}"
+              secret_id: "{{ lookup('ansible.builtin.env', 'VAULT_SECRET_ID') }}"
+          register: approle_login
+          delegate_to: localhost
+          retries: 3
+          delay: 5
+          until: approle_login is not failed
+
+        - name: Fetch secret from Vault
+          ansible.builtin.uri:
+            url: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR')
+              }}/v1/secret/data/lab/linux/{{ inventory_hostname }}"
+            method: GET
+            headers:
+              X-Vault-Token: "{{ approle_login.json.auth.client_token }}"
+          register: vault_result
+          delegate_to: localhost
+          retries: 3
+          delay: 5
+          until: vault_result is not failed
+      rescue:
+        - name: Fail if authentication or fetch fails
+          ansible.builtin.fail:
+            msg: "Failed to fetch credentials from Vault"
 
     - name: Set connection facts
       set_fact:
@@ -44,8 +63,8 @@
             src: /tmp/node_exporter.tar.gz
             dest: /usr/local/bin
             remote_src: yes
-            extra_opts: [--strip-components=1]
-            exclude: ['*.md', 'LICENSE']
+            extra_opts: [ --strip-components=1 ]
+            exclude: [ "*.md", "LICENSE" ]
 
         - name: Create Node Exporter Systemd Service
           ansible.builtin.copy:
@@ -67,7 +86,8 @@
 
     - name: Ensure Node Exporter is Running
       ansible.builtin.service:
-        name: "{{ 'node_exporter' if ansible_facts['os_family'] == 'RedHat' else 'prometheus-node-exporter' }}"
+        name: "{{ 'node_exporter' if ansible_facts['os_family'] == 'RedHat' else
+          'prometheus-node-exporter' }}"
         state: started
         enabled: yes
         daemon_reload: yes
@@ -79,20 +99,42 @@
 
   tasks:
     - name: Fetch Admin credentials via AppRole
-      community.hashi_vault.vault_kv2_get:
-        url: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR') }}"
-        role_id: "{{ lookup('ansible.builtin.env', 'VAULT_ROLE_ID') }}"
-        secret_id: "{{ lookup('ansible.builtin.env', 'VAULT_SECRET_ID') }}"
-        path: "lab/windows/{{ inventory_hostname }}"
-        engine_mount_point: "secret"
-        auth_method: "approle"
-      register: win_vault
-      delegate_to: localhost
+      block:
+        - name: Authenticate with Vault AppRole
+          ansible.builtin.uri:
+            url: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR') }}/v1/auth/approle/login"
+            method: POST
+            body_format: json
+            body:
+              role_id: "{{ lookup('ansible.builtin.env', 'VAULT_ROLE_ID') }}"
+              secret_id: "{{ lookup('ansible.builtin.env', 'VAULT_SECRET_ID') }}"
+          register: approle_login
+          delegate_to: localhost
+          retries: 3
+          delay: 5
+          until: approle_login is not failed
+
+        - name: Fetch secret from Vault
+          ansible.builtin.uri:
+            url: "{{ lookup('ansible.builtin.env', 'VAULT_ADDR')
+              }}/v1/secret/data/lab/windows/{{ inventory_hostname }}"
+            method: GET
+            headers:
+              X-Vault-Token: "{{ approle_login.json.auth.client_token }}"
+          register: vault_result
+          delegate_to: localhost
+          retries: 3
+          delay: 5
+          until: vault_result is not failed
+      rescue:
+        - name: Fail if authentication or fetch fails
+          ansible.builtin.fail:
+            msg: "Failed to fetch credentials from Vault"
 
     - name: Configure WinRM connection facts
-      set_fact:
-        ansible_user: "{{ win_vault.data.data.username }}"
-        ansible_password: "{{ win_vault.data.data.password }}"
+      ansible.builtin.set_fact:
+        ansible_user: "{{ vault_result.data.data.username }}"
+        ansible_password: "{{ vault_result.data.data.password }}"
         ansible_connection: winrm
         ansible_winrm_transport: basic
         ansible_winrm_port: 5985
