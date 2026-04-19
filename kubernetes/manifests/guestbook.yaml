@@ -12,12 +12,12 @@ spec:
     metadata:
       labels:
         app: guestbook-ui
-      spec: #Change ONLY the container image line in your guestbook.yaml
-        containers:
-        - name: ui
-          image: nginx:alpine  # Swapping gcr.io image for a standard nginx one
-          ports:
-          - containerPort: 80
+    spec: # <--- This must be aligned with 'metadata' above it
+      containers:
+      - name: ui
+        image: nginx:alpine 
+        ports:
+        - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
