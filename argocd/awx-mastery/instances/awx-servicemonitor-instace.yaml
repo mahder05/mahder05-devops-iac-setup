@@ -17,7 +17,6 @@ spec:
     path: /api/v2/metrics/
     interval: 30s
     scheme: http
-    # ADD THESE THREE LINES:
     authorization:
       credentials:
         name: awx-metrics-token
