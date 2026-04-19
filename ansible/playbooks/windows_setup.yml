@@ -5,7 +5,7 @@
 
   tasks:
     - name: Dynamically fetch credentials from Vault
-      include_vars: 
+      ansible.builtin.include_vars:
         file: ../vars/vault_lookup.yml
 
     - name: Verify Connectivity to Windows Host
@@ -13,13 +13,18 @@
 
     - name: Install Chocolatey packages
       chocolatey.chocolatey.win_chocolatey:
-        name: [googlechrome, notepadplusplus, 7zip, git]
+        name:
+          - googlechrome
+          - notepadplusplus
+          - 7zip
+          - git
         state: present
 
     - name: Ensure lab user exists
       ansible.windows.win_user:
         name: "labuser"
-        password: "{{ win_vault.data.data.labuser_password | default('M4_Mastery_2026!') }}"
+        password: "{{ win_vault.data.data.labuser_password | default('M4_Mastery_2026!')
+          }}"
         state: present
         groups: ["Administrators"]
 

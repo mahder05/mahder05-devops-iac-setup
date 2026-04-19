@@ -6,7 +6,7 @@
 
   tasks:
     - name: Dynamically fetch credentials from Vault
-      include_vars: 
+      ansible.builtin.include_vars:
         file: ../vars/vault_lookup.yml
 
 - name: Universal Linux Host Setup and Management
@@ -16,14 +16,15 @@
   vars:
     packages_common: [vim, curl, wget, net-tools]
     new_user: "labuser"
-    new_user_password_hashed: "$6$rounds=656000$saltsalt$9.v0/v1L..." 
+    new_user_password_hashed: "$6$rounds=656000$saltsalt$9.v0/v1L..."
 
   tasks:
     - name: Display system information
       ansible.builtin.debug:
         msg:
           - "Hostname     : {{ ansible_facts['hostname'] }}"
-          - "OS           : {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}"
+          - "OS           : {{ ansible_facts['distribution'] }} {{
+            ansible_facts['distribution_version'] }}"
           - "IP Address   : {{ ansible_facts['all_ipv4_addresses'] | first }}"
 
     - name: Install common packages

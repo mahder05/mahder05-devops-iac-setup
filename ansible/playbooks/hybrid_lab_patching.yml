@@ -18,9 +18,8 @@
       when: ansible_facts['os_family'] == "RedHat"
       become: true
       ansible.builtin.dnf:
-        name: "*"
-        state: latest
         update_cache: true
+        upgrade: true
       register: dnf_res
 
     # --- WINDOWS ---
@@ -31,20 +30,20 @@
           - SecurityUpdates
           - CriticalUpdates
         state: installed
-        reboot: no 
-      register: win_res
+        reboot: false
 
     # --- MODERN REBOOT TASKS ---
     - name: Reboot Linux
-      when: 
+      when:
         - ansible_facts['os_family'] != "Windows"
-        - (apt_res.changed | default(false)) or (dnf_res.changed | default(false))
+        - (apt_res.changed | default(false)) or (dnf_res.changed |
+          default(false))
       become: true
       ansible.builtin.reboot:
         reboot_timeout: 3600
 
     - name: Reboot Windows
-      when: 
+      when:
         - ansible_facts['os_family'] == "Windows"
         - win_res.reboot_required | default(false)
       ansible.windows.win_reboot:

@@ -20,11 +20,13 @@
         status_code: 200
       register: web_win
 
-    # --- DISPLAY HEALTH SUMMARY ---
     - name: Display Health Summary
       ansible.builtin.debug:
-        msg: 
-          - "System: {{ inventory_hostname }} ({{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }})"
-          # This logic checks if the variable exists and has a status before looking at it
-          - "Web Status: {{ 'UP' if (web_linux.status | default(0) == 200 or web_win.status | default(0) == 200) else 'DOWN' }}"
-          - "Memory Free: {{ ansible_facts['memfree_mb'] if ansible_facts['os_family'] != 'Windows' else 'Checked via WinRM' }} MB"
+        msg:
+          - "System: {{ inventory_hostname }} ({{ ansible_facts['distribution']
+            }} {{ ansible_facts['distribution_version'] }})"
+          - "Web Status: {{ 'UP' if (web_linux.status | default(0) in [200, 301,
+            302]) or (web_win.status | default(0) == 200) else 'DOWN' }}"
+          - "Memory Free: {{ ansible_facts['memfree_mb'] if
+            ansible_facts['os_family'] != 'Windows' else 'Checked via WinRM' }}
+            MB"

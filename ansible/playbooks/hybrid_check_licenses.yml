@@ -6,41 +6,46 @@
   tasks:
     # --- WINDOWS: Using CIM Instance (The Modern Way) ---
     - name: Get Windows License Status
-      win_shell: "Get-CimInstance -ClassName SoftwareLicensingProduct | Where-Object { $_.PartialProductKey } | Select-Object Description, LicenseStatus"
+      ansible.windows.win_shell: "Get-CimInstance -ClassName SoftwareLicensingProduct
+        | Where-Object { $_.PartialProductKey } | Select-Object Description,
+        LicenseStatus"
       register: windows_license
       when: ansible_facts['os_family'] == "Windows"
 
     # --- RHEL: Check Subscription ---
     - name: Get RHEL Subscription Status
-      command: subscription-manager status
+      ansible.builtin.command: subscription-manager status
       register: rhel_subscription
       become: true
+      changed_when: false
       when: ansible_facts['distribution'] == "RedHat"
       ignore_errors: true
 
     # --- UBUNTU: Check Pro Status ---
     - name: Get Ubuntu Pro Status
-      command: pro status
+      ansible.builtin.command: pro status
       register: ubuntu_pro
+      changed_when: false
       when: ansible_facts['distribution'] == "Ubuntu"
       ignore_errors: true
 
     # --- MAC: Hardware Serial ---
     - name: Get Mac Hardware Serial
-      command: system_profiler SPHardwareDataType
+      ansible.builtin.command: system_profiler SPHardwareDataType
       register: mac_serial
+      changed_when: false
       when: ansible_facts['os_family'] == "Darwin"
 
     # --- FINAL COMPLIANCE REPORT ---
     - name: Display Compliance Report
-      debug:
+      ansible.builtin.debug:
         msg: >
-          {% if ansible_facts['os_family'] == "Windows" %}
-          WINDOWS: {{ windows_license.stdout_lines | default('No Active License Found') }}
-          {% elif ansible_facts['distribution'] == "RedHat" %}
-          RHEL: {{ rhel_subscription.stdout_lines[0:3] | default('Not Registered') }}
-          {% elif ansible_facts['distribution'] == "Ubuntu" %}
-          UBUNTU: {{ ubuntu_pro.stdout_lines[0:5] | default('No Pro Status') }}
-          {% elif ansible_facts['os_family'] == "Darwin" %}
-          MAC: {{ mac_serial.stdout_lines | select('match', '.*Serial Number.*') | list }}
-          {% endif %}
+          {% if ansible_facts['os_family'] == "Windows" %} WINDOWS: {{
+          windows_license.stdout_lines | default('No Active License Found') }}
+          {% elif ansible_facts['distribution'] == "RedHat" %} RHEL: {{
+          rhel_subscription.stdout_lines[0:3] | default('Not Registered') }} {%
+          elif ansible_facts['distribution'] == "Ubuntu" %} UBUNTU: {{
+          ubuntu_pro.stdout_lines[0:5] | default('No Pro Status') }} {% elif
+          ansible_facts['os_family'] == "Darwin" %} MAC: {{
+          mac_serial.stdout_lines | select('match', '.*Serial Number.*') | list
+          }} {% endif %}
