@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# OS generated
+.DS_Store
+.idea/
+.vscode/
+
+# Sensitive data
+*.log
+.env

@@ -1,59 +1,51 @@
 #!/bin/bash
-CLUSTER_NAME="devops-lab"
-VAULT_NS="awx-mastery"
-
-echo -e "\033[0;34m🌀 Re-hydrating DevOps Lab...\033[0m"
 
 # 1. Start Colima
-if ! colima status >/dev/null 2>&1; then
-    echo -e "\033[1;33m🐳 Colima is down. Starting...\033[0m"
-    colima start --cpu 4 --memory 8 --disk 100
-    until docker info >/dev/null 2>&1; do printf "."; sleep 2; done
-    echo -e "\n✅ Docker is ready!"
-fi
+echo "🐳 Starting Colima..."
+colima start --cpu 4 --memory 8 --disk 100 2>/dev/null || echo "✅ Colima already active."
 
-# 2. Start k3d
-k3d cluster start "$CLUSTER_NAME" > /dev/null 2>&1 &
-echo -n "⏳ Waiting for Kubernetes API..."
-until kubectl get nodes &> /dev/null; do printf "."; sleep 3; done
-echo -e "\n✅ API is up!"
+# 2. Start k3d Cluster
+echo "🌟 Starting the k3d Cluster..."
+k3d cluster start devops-lab
+kubectl config use-context k3d-devops-lab
 
-# 3. Vault Auto-Unseal Logic
-echo -e "\033[0;34m🔐 Checking Vault Seal Status...\033[0m"
-# Wait for pod to exist
-until kubectl get pod vault-0 -n "$VAULT_NS" &>/dev/null; do sleep 2; done
+# 3. Readiness Check
+echo "⏳ Checking service readiness..."
+echo "🛡️ Waiting for Traefik Ingress Controller..."
+kubectl wait --for=condition=available deployment/traefik -n kube-system --timeout=60s
 
-VAULT_SEALED=$(kubectl exec -n "$VAULT_NS" vault-0 -- vault status -format=json 2>/dev/null | jq -r '.sealed')
+# Wait for Vault Pod
+until kubectl get pod vault-0 -n awx-mastery >/dev/null 2>&1; do
+    echo "   ↻ Waiting for vault-0 pod..."
+    sleep 5
+done
 
-if [ "$VAULT_SEALED" == "true" ]; then
-    echo "🔓 Vault is sealed. Unsealing now..."
-    kubectl exec -n "$VAULT_NS" vault-0 -- vault operator unseal kbs35vem+pRnLrrtTWIMyfsqicG++chRQbGNcUkIMkOw > /dev/null
-    kubectl exec -n "$VAULT_NS" vault-0 -- vault operator unseal L62lRtwkDyHXpMII+JoTGDg3Aeoou/48HDu0nb96a7Ue > /dev/null
-    kubectl exec -n "$VAULT_NS" vault-0 -- vault operator unseal s5xPNxBp0rq9ORh3Vkbn7j949JXQDDLh618fMdxyXYDC > /dev/null
-    echo "✅ Vault Unsealed!"
-else
-    echo "✅ Vault is already unsealed."
-fi
+# Wait for AWX Web
+echo "🚀 Waiting for AWX Web..."
+kubectl wait --for=condition=Ready pod -l "app.kubernetes.io/component=web" -n awx-mastery --timeout=120s
 
-# 4. Refresh Port Forwards
-echo -e "\033[0;34m🔌 Refreshing Port Forwards...\033[0m"
-pkill -f "port-forward" || true
-sleep 2
+# 4. Unseal Vault
+echo "🔓 Unsealing Vault..."
+kubectl exec -it vault-0 -n awx-mastery -- vault operator unseal nlMIaMxBiyoy57s0bUQ7KzxWWJnnz92UfdlbA4yu4hxI
+kubectl exec -it vault-0 -n awx-mastery -- vault operator unseal xDNCPYrVDNwUwd0Oq5GkNQbMIDi16ugfLl0+mOjE18R+
+kubectl exec -it vault-0 -n awx-mastery -- vault operator unseal IVxSc3YgroKpcrC01UeB84KYD6kZQVRkstQF6suFn39m
 
-kubectl port-forward -n argocd svc/argocd-server 8081:443 > /dev/null 2>&1 &
-kubectl port-forward -n "$VAULT_NS" svc/vault 8200:8200 > /dev/null 2>&1 &
-kubectl port-forward -n "$VAULT_NS" svc/awx-dev-service 8043:80 > /dev/null 2>&1 &
+# 5. Probing Web Interfaces via Ingress (Port 8043)
+echo "📡 Probing Ingress Endpoints (Port 8043)..."
+urls=("http://argocd.local:8043" "http://awx.local:8043" "http://grafana.local:8043" "http://vault.local:8043")
 
-echo "Waiting for services to be ready..."
-sleep 5
+for url in "${urls[@]}"; do
+    while ! curl -s -k -f "$url" > /dev/null; do
+        echo "   ↻ $url is warming up..."
+        sleep 5
+    done
+    echo "   ✅ $url is UP!"
+done
 
-echo "Opening in browser..."
-open http://localhost:8081
-open http://localhost:8043
-open http://localhost:8200
+# 6. Open Browser
+open "http://argocd.local:8043"
+open "http://awx.local:8043"
+open "http://grafana.local:8043"
+open "http://vault.local:8043"
 
-echo "AWX:    http://localhost:8043"
-echo "ArgoCD: http://localhost:8081"
-echo "Vault:  http://localhost:8200"
-
-echo -e "\033[0;32m🚀 Lab is fully operational!\033[0m"
+echo "✅ Lab is READY."

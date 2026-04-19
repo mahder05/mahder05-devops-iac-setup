@@ -1,74 +1,38 @@
 #!/bin/bash
-
-# --- CONFIGURATION ---
-CLUSTER_NAME="devops-lab"
-VAULT_ADDR="http://localhost:8200"
-ARGOCD_ADDR="https://localhost:8081"
-AWX_ADDR="http://localhost:8043"
-
-# Colors
 GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
 RED='\033[0;31m'
+BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo -e "${BLUE}🔍 Checking DevOps Lab Health Status...${NC}\n"
+echo -e "${BLUE}================================================${NC}"
+echo -e "${BLUE}📊 DEVOPS-LAB COMPREHENSIVE STATUS${NC}"
+echo -e "${BLUE}================================================${NC}"
 
-# 1. Colima Engine Status
-echo -n "🐳 Colima Engine: "
-if colima status >/dev/null 2>&1; then
-    echo -e "${GREEN}RUNNING${NC}"
+# 1. Colima / Docker VM
+echo -ne "🐳 Colima VM: "
+colima status >/dev/null 2>&1 && echo -e "${GREEN}RUNNING${NC}" || echo -e "${RED}STOPPED${NC}"
+
+# 2. k3d Cluster
+echo -ne "☸️  k3d Cluster: "
+k3d cluster list | grep -q "devops-lab.*1/1" && echo -e "${GREEN}ACTIVE${NC}" || echo -e "${RED}INACTIVE${NC}"
+
+# 3. Vault Seal Status
+echo -ne "🔐 Vault Status: "
+SEAL_CHECK=$(kubectl exec -it vault-0 -n awx-mastery -- vault status 2>/dev/null | grep "Sealed" | awk '{print $2}')
+if [ "$SEAL_CHECK" == "false" ]; then
+    echo -e "${GREEN}UNSEALED${NC}"
 else
-    echo -e "${RED}STOPPED${NC}"
+    echo -e "${RED}SEALED/OFFLINE${NC}"
 fi
 
-# 2. k3d Cluster Status
-echo -n "🏗️  k3s Cluster:  "
-K3D_STATUS=$(k3d cluster list "$CLUSTER_NAME" --no-headers 2>/dev/null | awk '{print $3}')
-if [[ "$K3D_STATUS" == *"1/1"* ]] || [[ "$K3D_STATUS" == *"running"* ]]; then
-    echo -e "${GREEN}ACTIVE${NC}"
-else
-    echo -e "${RED}OFFLINE ($K3D_STATUS)${NC}"
-fi
+# 4. Ingress Health
+echo -e "\n🌐 [INGRESS ROUTES]"
+ingresses=("argocd/main-ingress" "awx-mastery/devops-lab-ingress" "monitoring/monitoring-stack-ingress")
+for ing in "${ingresses[@]}"; do
+    NS=$(echo $ing | cut -d'/' -f1)
+    NAME=$(echo $ing | cut -d'/' -f2)
+    ADDR=$(kubectl get ingress $NAME -n $NS -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+    [ -n "$ADDR" ] && echo -e "   [${GREEN}OK${NC}] $NAME -> $ADDR" || echo -e "   [${RED}!!${NC}] $NAME -> Pending"
+done
 
-# 3. Port Forwarding Check
-echo -n "🔌 Port Tunnels: "
-PF_COUNT=$(pgrep -f "port-forward" | wc -l | xargs)
-if [ "$PF_COUNT" -gt 0 ]; then
-    echo -e "${GREEN}ACTIVE ($PF_COUNT tunnels)${NC}"
-else
-    echo -e "${YELLOW}INACTIVE (Run ./devops_lab_start.sh)${NC}"
-fi
-
-echo -e "\n${BLUE}🌐 Service API Health:${NC}"
-echo "---------------------------------------------------"
-
-# Vault Check (Standard HTTP)
-if curl -s -o /dev/null --connect-timeout 2 "$VAULT_ADDR/v1/sys/health"; then
-    echo -e "🔐 Vault API   | ${GREEN}OK (Accessible)${NC}"
-else
-    echo -e "🔐 Vault API   | ${RED}UNREACHABLE${NC}"
-fi
-
-# ArgoCD Check (HTTPS/Self-signed)
-if curl -s -k -o /dev/null --connect-timeout 2 "$ARGOCD_ADDR"; then
-    echo -e "🐙 ArgoCD API  | ${GREEN}OK (Accessible)${NC}"
-else
-    echo -e "🐙 ArgoCD API  | ${RED}UNREACHABLE${NC}"
-fi
-
-# AWX Check (HTTP based on your working curl)
-if curl -s -o /dev/null --connect-timeout 2 "$AWX_ADDR/"; then
-    echo -e "🤖 AWX API     | ${GREEN}OK (Accessible)${NC}"
-else
-    echo -e "🤖 AWX API     | ${RED}UNREACHABLE${NC}"
-fi
-
-echo -e "---------------------------------------------------"
-
-# 4. Resource Usage
-echo -e "\n${BLUE}📈 Resource Consumption (Colima):${NC}"
-colima list -j 2>/dev/null | jq -r 'select(.status=="running") | "CPU: \(.cpus) | RAM: \(.memory)Gi | Disk: \(.disk)Gi"' || echo "No active Colima instance."
-
-echo -e "\n${YELLOW}💡 Tip: If APIs are unreachable but Cluster is active, rerun ./devops_lab_start.sh${NC}"
+echo -e "${BLUE}================================================${NC}"
