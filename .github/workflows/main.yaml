@@ -1,4 +1,4 @@
-name: GitOps Sync
+name: GitOps-Sync
 on:
   push:
     branches:
