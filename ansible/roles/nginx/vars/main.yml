@@ -1,0 +1,5 @@
+---
+# High-priority role variables
+nginx_config_path: /etc/nginx/nginx.conf
+nginx_conf_dir: /etc/nginx/conf.d
+nginx_log_dir: /var/log/nginx

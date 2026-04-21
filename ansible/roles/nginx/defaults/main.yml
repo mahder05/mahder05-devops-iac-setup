@@ -1,0 +1,6 @@
+---
+# Low-priority defaults
+nginx_http_port: 80
+nginx_max_clients: 1024
+nginx_keepalive_timeout: 65
+nginx_remove_default_conf: true
