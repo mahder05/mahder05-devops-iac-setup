@@ -2,8 +2,9 @@ apiVersion: awx.ansible.com/v1beta1
 kind: AWX
 metadata:
   name: awx-dev
-  namespace: awx-mastery
 spec:
+  # Remove the web_service_nodeport_port line entirely
   service_type: ClusterIP
-  postgres_storage_class: local-path
-  web_service_nodeport_port: 80
+  # Keep your other specs like admin_user, postgres/redis settings, etc.
+  admin_user: admin
+  admin_password_secret: awx-admin-password # or however you defined it
